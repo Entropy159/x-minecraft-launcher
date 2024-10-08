@@ -369,6 +369,10 @@ instance:
   lastPlayed: Última vez jugado
   launchArguments: Argumentos de Lanzamiento Previo
   launchServer: Iniciar el servidor localhost
+  linkFileDesc: |-
+    Esto sobrescribirá el {file} local de la instancia con el {file} global. 
+    ¿Estás seguro de vincularlo?
+  linkFileTitle: ¿Estás seguro de vincular {file}?
   mcOptions: Opciones de Minecraft
   mcOptionsHint: Argumentos adicionales de lanzamiento de Minecraft
   name: Nombre del Perfil
@@ -381,6 +385,12 @@ instance:
   prependCommandHint: Esto antepondrá este comando antes de todos los comandos de inicio.
   requireName: El nombre es obligatorio
   showInstance: Mostrar carpeta del juego
+  useSharedOptions: Usar configuración de juego compartida
+  useSharedOptionsDesc: >-
+    Esto vinculará el archivo options.txt a un archivo compartido entre
+    instancias.
+  useSharedServersList: Usar lista de servidores compartidos
+  useSharedServersListDesc: Esto vinculará servers.dat a un archivo compartido entre instancias.
   versionHint: La versión de Minecraft de este juego
   vmOptions: Opciones de JVM
   vmOptionsHint: Argumentos adicionales para pasar a la JVM
@@ -388,6 +398,9 @@ instanceAge:
   older: Más Antiguo
   threeDay: En Tres Días
   today: Hoy
+instanceDiscover:
+  gameFolder: Descubre {count} carpetas de juegos
+  instanceFolder: Se encontraron {count} instancias
 instanceFileOperation:
   add: Agregar
   backup-add: Reemplazar (Copia de Seguridad)
@@ -422,9 +435,15 @@ instanceUpdate:
   update: Iniciar Actualización
 instances:
   add: Crear juego
+  addCurseForgeDescription: |-
+    Importar desde la carpeta de datos de curseforge. 
+    Debes seleccionar la carpeta de datos raíz de curseforge.
+  addMMCDescription: |-
+    Importe la instancia MultiMC existente. 
+    Debe seleccionar la carpeta de datos de MultiMC.
   addServer: Crear desde el servidor
   addServerDescription: Esto creará un juego que se iniciará directamente en el servidor.
-  addTemplate: Crear desde plantilla
+  addTemplate: Crear desde modpack descargado
   choose: Selecciona un juego
   folderSetting: Configuración de carpeta
   importFolder: Importar desde Carpeta
@@ -439,6 +458,7 @@ java:
   allocatedShort: Asignación Automática
 launch:
   killServer: Matar el servidor localhost
+  launchAnyway: Lanzar de todos modos
 launchBlocked:
   launchSpawnProcessFailed:
     description: >-
@@ -976,6 +996,7 @@ setting:
     Limita el número máximo de conexiones por anfitrión o en total para todos
     los anfitriones. 0 significa sin límite.
   maxSocketsTitle: Máximo de Conexiones HTTP
+  migrateFromOther: Importar desde otro lanzador
   name: Configuración Global | Configuraciones Globales
   network: Configuración de la red
   officialWebsite: Sitio Web Oficial
@@ -1057,6 +1078,7 @@ shaderPack:
   showFile: Mostrar este pack de shaders en la carpeta
 shared:
   accept: Aceptar
+  skipForNow: Saltar por ahora
 summery: Resumen
 tag:
   create: Crear Etiqueta

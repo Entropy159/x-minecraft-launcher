@@ -40,7 +40,7 @@ export function useLaunchButton() {
   const { issue: userIssue, fix: fixUserIssue } = useUserDiagnose()
   const { status, pause, resume } = injection(kLaunchTask)
   const { isValidating: isRefreshingVersion } = injection(kInstanceVersion)
-  const { launch, launching, count, kill } = injection(kInstanceLaunch)
+  const { launch, launching, count, abort } = injection(kInstanceLaunch)
 
   const { t } = useI18n()
   const dirty = ref(false)
@@ -78,7 +78,7 @@ export function useLaunchButton() {
         right: true,
         menu: [],
         onClick: () => {
-          kill()
+          abort()
         },
       }
     } else if (count.value > 0) {
@@ -89,7 +89,7 @@ export function useLaunchButton() {
         right: true,
         menu: [],
         onClick: () => {
-          showLaunchStatusDialog(true)
+          showLaunchStatusDialog({ isKill: true })
         },
       }
     } else if (userIssue.value) {
@@ -121,12 +121,15 @@ export function useLaunchButton() {
         text: t('launch.launch'),
         color: !javaIssue.value ? 'primary' : 'primary darken-1',
         leftIcon: 'play_arrow',
-        menu: javaIssue.value ? [javaIssue.value] : [],
         onClick: async () => {
           await mutate().catch(() => { })
           await fixInstanceFileIssue()
-          await launch()
-          showLaunchStatusDialog(false)
+          if (javaIssue.value) {
+            showLaunchStatusDialog({ javaIssue: javaIssue.value })
+          } else {
+            launch()
+            showLaunchStatusDialog()
+          }
         },
       }
     }

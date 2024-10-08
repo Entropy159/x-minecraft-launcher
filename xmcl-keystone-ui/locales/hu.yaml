@@ -403,6 +403,10 @@ instance:
   lastPlayed: Utoljára játszott
   launchArguments: Indítási argumentumok Előnézet
   launchServer: Indítsa el a localhost szervert
+  linkFileDesc: |-
+    Ez felülírja a helyi {file} példányt a globális {file} értékkel. 
+    Biztosan linkeled?
+  linkFileTitle: Biztosan linkeli a(z) {file} fájlt?
   mcOptions: Minecraft beállítások
   mcOptionsHint: Kiegészítő Minecraft indítási beállítások
   name: Profil név
@@ -415,6 +419,14 @@ instance:
   prependCommandHint: Ez a parancs az összes indítási parancs elé kerül
   requireName: A név megadása kötelező
   showInstance: Játék mappa megjelenítése
+  useSharedOptions: Használja a megosztott játékbeállításokat
+  useSharedOptionsDesc: >-
+    Ezzel összekapcsolja az options.txt fájlt egy több példányban megosztott
+    fájllal
+  useSharedServersList: Használja a megosztott szerverek listáját
+  useSharedServersListDesc: >-
+    Ez összekapcsolja a servers.da fájlt egy megosztott fájllal a példányok
+    között
   versionHint: A játék Minecraft verziója
   vmOptions: JVM Beállítások
   vmOptionsHint: Extra argumentumok átadása a JVM-nek
@@ -422,6 +434,9 @@ instanceAge:
   older: Régebbi
   threeDay: Három napon belül
   today: Ma
+instanceDiscover:
+  gameFolder: Fedezzen fel {count} játékmappát
+  instanceFolder: '{count} példányt találtunk'
 instanceFileOperation:
   add: Új
   backup-add: Felülírás (Mentés)
@@ -466,17 +481,20 @@ instanceUpdate:
   update: Frissítés indítása
 instances:
   add: Játék létrehozása
+  addCurseForgeDescription: |-
+    Importálás a cursefor adatmappából. 
+    Ki kell választania a curseforge gyökéradat-mappáját
   addDescription: Új példány létrehozása az alapoktól
-  addMMCDescription: >-
-    Létező MultiMC-példány importálása. Ki kell választanod a példány mappáját a
-    MultiMC-ből.
+  addMMCDescription: |-
+    Importálja a meglévő MultiMC példányt. 
+    Ki kell választania az adatmappát a MultiMC-ből.
   addManually: Manuális létrehozás
-  addModrinthDescription: >-
-    Létező Modrinth példány importálása. Ki kell választanod a Modrinth példány
-    mappáját.
+  addModrinthDescription: |-
+    Importálja a meglévő Modrinth példányt. 
+    Ki kell választania a Modrinth gyökér adatmappát.
   addServer: Létrehozás szerverről
   addServerDescription: Ez létrehoz egy játékot közvetlenül a szerverre.
-  addTemplate: Létrehozás sablonról
+  addTemplate: Hozzon létre a letöltött modpackből
   addTemplateDescription: Importálás letöltött Modcsomagból
   addVanilla: Létrehozás vanilla-szerű Minecraftból
   addVanillaDescription: >-
@@ -516,6 +534,7 @@ launch:
   kill: Leállítás
   killServer: Öld meg a Localhost szervert
   launch: Indítás
+  launchAnyway: Indítsa el egyébként
 launchBlocked:
   ignore: Indítás erőltetve
   launchBadVersion:
@@ -1277,6 +1296,7 @@ setting:
     Korlátozza a maximálisan engedélyezhető foglalatok számát állomásonként vagy
     az összes állomáson összesen. A 0 azt jelenti, hogy nincs korlátozás.
   maxSocketsTitle: Max HTTP foglalatok
+  migrateFromOther: Importálás másik indítóból
   name: Globális beállítás | Globális beállítások
   network: Hálózati beállítások
   officialWebsite: Hivatalos weboldal
@@ -1382,6 +1402,7 @@ shaderPack:
   showFile: Shader pack megjelenítése a mappában
 shared:
   accept: Elfogad
+  skipForNow: Most hagyd ki
 store:
   explore: Felfedezés
   latestMinecraft: Legfrissebb Minecraft verzió

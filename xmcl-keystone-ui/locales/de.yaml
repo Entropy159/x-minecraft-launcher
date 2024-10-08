@@ -453,6 +453,12 @@ instance:
   lastPlayed: Das letzte Mal spielten sie
   launchArguments: Vorschau der Startargumente
   launchServer: Starten Sie den Localhost-Server
+  linkFileDesc: >-
+    Dadurch wird die lokale {file} der Instanz mit der globalen {file}
+    überschrieben. 
+
+    Sind Sie sicher, dass Sie es verlinken?
+  linkFileTitle: Sind Sie sicher, dass Sie {file} verlinken?
   mcOptions: Minecraft Einstellungen
   mcOptionsHint: Zusätzliche Anweisungen zum Starten von Minecraft
   name: Profilname
@@ -464,6 +470,14 @@ instance:
   prependCommandHint: Dadurch wird dieser Befehl allen Startbefehlen vorangestellt
   requireName: Name ist erforderlich
   showInstance: Spieleordner anzeigen
+  useSharedOptions: Verwenden Sie gemeinsame Spieleinstellungen
+  useSharedOptionsDesc: >-
+    Dadurch wird die Datei „options.txt“ mit einer instanzübergreifenden Datei
+    verknüpft
+  useSharedServersList: Verwenden Sie die Liste der gemeinsam genutzten Server
+  useSharedServersListDesc: >-
+    Dadurch wird die Datei „servers.dat“ mit einer instanzübergreifenden Datei
+    verknüpft
   versionHint: Minecraft Version für dieses Spiel
   vmOptions: JVM-Parameter
   vmOptionsHint: Zusätzliche Argumente, die an die JVM übergeben werden
@@ -471,6 +485,9 @@ instanceAge:
   older: Alte
   threeDay: Innerhalb von drei Tagen
   today: Heute.
+instanceDiscover:
+  gameFolder: Entdecken Sie {count} Spielordner
+  instanceFolder: '{count} Instanzen gefunden'
 instanceFileOperation:
   add: hinzufügen
   backup-add: Ersetzen (Reserve)
@@ -515,17 +532,20 @@ instanceUpdate:
   update: Aktualisierung beginnen
 instances:
   add: Ein Spiel erstellen
+  addCurseForgeDescription: |-
+    Aus dem Curseforge-Datenordner importieren. 
+    Sie müssen den Stammdatenordner von Curseforge auswählen
   addDescription: Erstellen Sie eine neue Instanz von Grund auf
   addMMCDescription: |-
-    Importieren Sie eine bestehende MultiMC-Instanz. 
-    Sie müssen den Ordner der MultiMC-Instanz auswählen.
+    Vorhandene MultiMC-Instanz importieren. 
+    Sie müssen den Datenordner von MultiMC auswählen.
   addManually: Manuell erstellen
   addModrinthDescription: |-
-    Importieren Sie eine bestehende Modrinth-Instanz. 
-    Sie müssen den Ordner der Modrinth-Instanz auswählen.
+    Vorhandene Modrinth-Instanz importieren. 
+    Sie müssen den Modrinth-Stammdatenordner auswählen.
   addServer: Vom Server aus erstellen
   addServerDescription: Dadurch wird das Spiel direkt auf dem Server gestartet.
-  addTemplate: Aus einer Vorlage erstellen
+  addTemplate: Aus heruntergeladenem Modpack erstellen
   addTemplateDescription: Import aus einem heruntergeladenen Modpack
   addVanilla: Erstellen Sie mit Vanilla Minecraft
   addVanillaDescription: |-
@@ -566,6 +586,7 @@ launch:
   kill: Stopp
   killServer: Töte den Localhost-Server
   launch: Los geht's
+  launchAnyway: Trotzdem starten
 launchBlocked:
   ignore: Erzwungener Start
   launchGeneralException:
@@ -1344,6 +1365,7 @@ setting:
     alle Rechner
      insgesamt. 0 bedeutet keine Einschränkungen.
   maxSocketsTitle: Maximale Anzahl von HTTP-Sockets
+  migrateFromOther: Von einem anderen Launcher importieren
   name: Globale Einstellungen | Globale Einstellungen
   network: Netzwerkeinstellungen
   officialWebsite: Офіційний сайт
@@ -1460,6 +1482,7 @@ shaderPack:
   showFile: Відкрити цей шейдер у папці
 shared:
   accept: Akzeptieren
+  skipForNow: Überspringen Sie es vorerst
 summery: Sommer
 tag:
   create: Einen Tag erstellen

@@ -412,6 +412,10 @@ instance:
   lastPlayed: Giocato l'ultima volta
   launchArguments: Anteprima argomenti di avvio
   launchServer: Avvia il server localhost
+  linkFileDesc: |-
+    Ciò sovrascriverà l'istanza locale del {file} con il globale {file}. 
+    Sei sicuro di collegarlo?
+  linkFileTitle: Sei sicuro di collegare {file}?
   mcOptions: Opzioni Minecraft
   mcOptionsHint: Argomenti di avvio aggiuntivi di Minecraft
   name: Nome profilo
@@ -424,6 +428,10 @@ instance:
   prependCommandHint: Questo anteporrà questo comando prima di tutti i comandi di avvio
   requireName: Il nome è obbligatorio
   showInstance: Mostra la cartella del gioco
+  useSharedOptions: Utilizza le impostazioni di gioco condivise
+  useSharedOptionsDesc: Ciò collegherà options.txt a un file condiviso tra le istanze
+  useSharedServersList: Utilizza l'elenco dei server condivisi
+  useSharedServersListDesc: Ciò collegherà server.dat a un file condiviso tra le istanze
   versionHint: La versione di Minecraft di questo gioco
   vmOptions: Opzioni JVM
   vmOptionsHint: Argomenti aggiuntivi passati a JVM
@@ -431,6 +439,9 @@ instanceAge:
   older: Più vecchio
   threeDay: In tre giorni
   today: Oggi
+instanceDiscover:
+  gameFolder: Scopri {count} cartelle di giochi
+  instanceFolder: Trovate {count} istanze
 instanceFileOperation:
   add: Aggiungi
   backup-add: Sostituisci (Backup)
@@ -473,17 +484,20 @@ instanceUpdate:
   update: Avvia aggiornamento
 instances:
   add: Crea gioco
+  addCurseForgeDescription: |-
+    Importa dalla cartella dei dati di curseforge. 
+    Devi selezionare la cartella dei dati root di curseforge
   addDescription: Crea una nuova istanza da zero
-  addMMCDescription: >-
-    Importa istanza MultiMC esistente. È necessario selezionare la cartella
-    dell'istanza da MultiMC.
+  addMMCDescription: |-
+    Importa l'istanza MultiMC esistente. 
+    È necessario selezionare la cartella dati da MultiMC.
   addManually: Crea manualmente
-  addModrinthDescription: >-
-    Importa istanza Modrinth esistente. È necessario selezionare la cartella
-    dell'istanza Modrinth.
+  addModrinthDescription: |-
+    Importa l'istanza Modrinth esistente. 
+    È necessario selezionare la cartella dei dati root di Modrinth.
   addServer: Crea da server
   addServerDescription: Questo creerà un gioco che si avvia direttamente nel server.
-  addTemplate: Crea da modello
+  addTemplate: Crea dal modpack scaricato
   addTemplateDescription: Importa da Modpack scaricato
   addVanilla: Crea da Minecraft vanilla
   addVanillaDescription: >-
@@ -523,6 +537,7 @@ launch:
   kill: Arresta
   killServer: Uccidi il server Localhost
   launch: Avvia
+  launchAnyway: Avvia comunque
 launchBlocked:
   ignore: Forza avvio
   launchBadVersion:
@@ -1272,6 +1287,7 @@ setting:
     Limita il numero massimo di socket consentiti per host o per tutti gli host
     in totale. 0 significa senza limiti.
   maxSocketsTitle: Max socket HTTP
+  migrateFromOther: Importa da un altro launcher
   name: Impostazioni globali | Impostazioni globali
   network: Impostazioni di rete
   officialWebsite: Sito ufficiale
@@ -1389,6 +1405,7 @@ shaderPack:
   showFile: Mostra questo shader pack nella cartella
 shared:
   accept: Accetta
+  skipForNow: Salta per ora
 store:
   explore: Esplora
   latestMinecraft: Ultima versione di Minecraft

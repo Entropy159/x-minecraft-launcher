@@ -16,7 +16,8 @@
         :style="{ height: itemHeight + 'px' }"
         class="flex"
       >
-        {{ item === 'enabled' ? t("shaderPack.enabled") : item === 'disabled' ? t("shaderPack.disabled") : t('modInstall.search') }}
+        {{ item === 'enabled' ? t("shaderPack.enabled") : item === 'disabled' ? t("shaderPack.disabled") :
+          t('modInstall.search') }}
 
         <div class="flex-grow" />
         <v-btn
@@ -45,8 +46,7 @@
       <Hint
         v-if="dragover"
         icon="save_alt"
-        :text="
-          t('shaderPack.dropHint')"
+        :text="t('shaderPack.dropHint')"
         class="h-full"
       />
       <MarketProjectDetailModrinth
@@ -59,7 +59,6 @@
         :categories="modrinthCategories"
         :all-files="shaderProjectFiles"
         :curseforge="selectedItem?.curseforge?.id || selectedItem.curseforgeProjectId"
-        @install="onInstall"
         @uninstall="onUninstall"
         @enable="onEnable"
         @disable="onUninstall([$event])"
@@ -68,7 +67,7 @@
       <ShaderPackDetailResource
         v-else-if="isShaderPackProject(selectedItem)"
         :shader-pack="selectedItem"
-        :installed="selectedItem.files?.map(i => i.resource) || []"
+        :installed="selectedItem.files || []"
         :runtime="runtime"
       />
       <MarketRecommendation
@@ -100,7 +99,7 @@ import MarketProjectDetailModrinth from '@/components/MarketProjectDetailModrint
 import MarketRecommendation from '@/components/MarketRecommendation.vue'
 import { useLocalStorageCacheBool } from '@/composables/cache'
 import { kCurseforgeInstaller, useCurseforgeInstaller } from '@/composables/curseforgeInstaller'
-import { useDrop } from '@/composables/dropHandler'
+import { useGlobalDrop } from '@/composables/dropHandler'
 import { kInstance } from '@/composables/instance'
 import { InstanceShaderFile, kInstanceShaderPacks } from '@/composables/instanceShaderPack'
 import { kModrinthInstaller, useModrinthInstaller } from '@/composables/modrinthInstaller'
@@ -111,9 +110,10 @@ import { useService } from '@/composables/service'
 import { ShaderPackProject, kShaderPackSearch } from '@/composables/shaderPackSearch'
 import { useToggleCategories } from '@/composables/toggleCategories'
 import { vSharedTooltip } from '@/directives/sharedTooltip'
+import { basename } from '@/util/basename'
 import { injection } from '@/util/inject'
 import { ProjectEntry, ProjectFile } from '@/util/search'
-import { Resource, ResourceDomain, ResourceServiceKey } from '@xmcl/runtime-api'
+import { InstanceShaderPacksServiceKey, Resource } from '@xmcl/runtime-api'
 import ShaderPackDetailResource from './ShaderPackDetailResource.vue'
 import ShaderPackItem from './ShaderPackItem.vue'
 
@@ -170,17 +170,13 @@ const { t } = useI18n()
 const isShaderPackProject = (p: ProjectEntry<ProjectFile> | undefined): p is ShaderPackProject => !!p
 
 const { shaderPack } = injection(kInstanceShaderPacks)
-const { removeResources } = useService(ResourceServiceKey)
 
-const onInstall = (r: Resource[]) => {
-  shaderPack.value = r[0].fileName
-}
 const onUninstall = (files: ProjectFile[]) => {
   shaderPack.value = ''
-  removeResources(files.map(f => (f as InstanceShaderFile).resource.hash))
+  uninstall(path.value, files.map(f => f.path))
 }
 const onEnable = (f: ProjectFile) => {
-  shaderPack.value = (f as InstanceShaderFile).resource.fileName
+  shaderPack.value = (f as InstanceShaderFile).fileName
 }
 
 // Reset all filter
@@ -194,15 +190,18 @@ const { name } = injection(kInstance)
 usePresence(computed(() => t('presence.shaderPack', { instance: name.value })))
 
 // Drop
-const { importResources } = useService(ResourceServiceKey)
-const { dragover } = useDrop(() => {}, async (t) => {
-  const paths = [] as string[]
-  for (const f of t.files) {
-    paths.push(f.path)
-  }
-  const resources = await importResources(paths.map(p => ({ path: p, domain: ResourceDomain.ShaderPacks })))
-  shaderPack.value = resources[0].fileName
-}, () => {})
+const { dragover } = useGlobalDrop({
+  onEnter: () => { },
+  onDrop: async (t) => {
+    const paths = [] as string[]
+    for (const f of t.files) {
+      paths.push(f.path)
+    }
+    const resources = await install(path.value, paths)
+    shaderPack.value = basename(resources[0])
+  },
+  onLeave: () => { },
+})
 
 // Page compact
 const compact = injection(kCompact)
@@ -210,12 +209,13 @@ onMounted(() => {
   compact.value = true
 })
 
+const { installFromMarket, install, uninstall } = useService(InstanceShaderPacksServiceKey)
 // modrinth installer
 const modrinthInstaller = useModrinthInstaller(
   path,
   runtime,
   shaderProjectFiles,
-  onInstall,
+  installFromMarket,
   onUninstall,
 )
 provide(kModrinthInstaller, modrinthInstaller)
@@ -225,9 +225,8 @@ const curseforgeInstaller = useCurseforgeInstaller(
   path,
   runtime,
   shaderProjectFiles,
-  onInstall,
+  installFromMarket,
   onUninstall,
-  'mc-mods',
 )
 provide(kCurseforgeInstaller, curseforgeInstaller)
 

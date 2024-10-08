@@ -309,7 +309,7 @@ const { isShown } = useDialog('launch-server', () => {
   getServerInstanceMods(path.value).then((mods) => {
     const all = enabled.value
     if (mods.length > 0) {
-      selected.value = all.filter(m => mods.some(a => a.ino === m.resource.ino))
+      selected.value = all.filter(m => mods.some(a => a.ino === m.ino))
     } else {
       selected.value = all
     }
@@ -324,7 +324,7 @@ const enabled = computed(() => mods.value.filter(m => m.enabled))
 const search = ref('')
 
 function getSide(mod: ModFile) {
-  const fabric = mod.resource.metadata.fabric
+  const fabric = mod.fabric
   if (fabric) {
     let env: 'client' | 'server' | '*' | undefined
     if (fabric instanceof Array) {
@@ -363,7 +363,7 @@ const { installToServerInstance, getServerInstanceMods } = useService(InstanceMo
 
 function selectFit() {
   const filtered = enabled.value.filter(v => {
-    const fabric = v.resource.metadata.fabric
+    const fabric = v.fabric
     if (fabric) {
       let env: 'client' | 'server' | '*' | undefined
       if (fabric instanceof Array) {
@@ -400,9 +400,11 @@ const { refresh: onPlay, refreshing: loading, error } = useRefreshable(async () 
   const _mods = selected.value
 
   if (!_eula) {
+    console.log('eula')
     await setEULA(instPath, true)
   }
   if (_serverProperties) {
+    console.log('serverProperties')
     await setServerProperties(instPath, {
       ..._serverProperties,
       port: _port ?? 25565,
@@ -412,24 +414,29 @@ const { refresh: onPlay, refreshing: loading, error } = useRefreshable(async () 
     })
   }
   if (!version) {
+    console.log('installServer')
     const versionIdToInstall = await installServer(runtimeValue, instPath, version)
     await installMinecraftJar(runtimeValue.minecraft, 'server')
     await installDependencies(versionIdToInstall, 'server')
     version = versionIdToInstall
   } else {
+    console.log('installDependencies')
     await installMinecraftJar(runtimeValue.minecraft, 'server')
     await installDependencies(version, 'server')
   }
   if (linkedWorld.value) {
+    console.log('linkSaveAsServerWorld', linkedWorld.value)
     await linkSaveAsServerWorld({
       instancePath: instPath,
       saveName: linkedWorld.value,
     })
   }
+  console.log('installToServerInstance')
   await installToServerInstance({
     path: instPath,
-    mods: _mods.map(v => v.resource),
+    mods: _mods.map(v => v.path),
   })
+  console.log('launch')
   await launch('server', { nogui: _nogui, version })
 })
 

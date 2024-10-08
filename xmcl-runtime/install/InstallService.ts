@@ -1,23 +1,24 @@
 import { checksum, MinecraftFolder, ResolvedLibrary, Version } from '@xmcl/core'
 import { DownloadBaseOptions } from '@xmcl/file-transfer'
-import { DEFAULT_FORGE_MAVEN, DEFAULT_RESOURCE_ROOT_URL, DownloadTask, InstallForgeOptions, InstallJarTask, InstallProfile, LiteloaderVersion, MinecraftVersion, Options, installAssetsTask, installByProfileTask, installFabric, installForgeTask, installLabyMod4Task, installLibrariesTask, installLiteloaderTask, installNeoForgedTask, installOptifineTask, installQuiltVersion, installResolvedAssetsTask, installResolvedLibrariesTask, installVersionTask } from '@xmcl/installer'
-import { Asset, InstallService as IInstallService, InstallFabricOptions, InstallLabyModOptions, InstallNeoForgedOptions, InstallOptifineOptions, InstallQuiltOptions, InstallServiceKey, InstallableLibrary, LockKey, MutableState, Resource, ResourceDomain, Settings, InstallForgeOptions as _InstallForgeOptions, isFabricLoaderLibrary, isForgeLibrary } from '@xmcl/runtime-api'
+import { DEFAULT_FORGE_MAVEN, DEFAULT_RESOURCE_ROOT_URL, DownloadTask, installAssetsTask, installByProfileTask, installFabric, InstallForgeOptions, installForgeTask, InstallJarTask, installLabyMod4Task, installLibrariesTask, installLiteloaderTask, installNeoForgedTask, installOptifineTask, InstallProfile, installQuiltVersion, installResolvedAssetsTask, installResolvedLibrariesTask, installVersionTask, LiteloaderVersion, MinecraftVersion, Options, PostProcessFailedError } from '@xmcl/installer'
+import { InstallForgeOptions as _InstallForgeOptions, Asset, InstallService as IInstallService, InstallableLibrary, InstallFabricOptions, InstallLabyModOptions, InstallNeoForgedOptions, InstallOptifineAsModOptions, InstallOptifineOptions, InstallQuiltOptions, InstallServiceKey, isFabricLoaderLibrary, isForgeLibrary, LockKey, MutableState, OptifineVersion, Settings } from '@xmcl/runtime-api'
 import { CancelledError, task } from '@xmcl/task'
 import { spawn } from 'child_process'
 import { existsSync } from 'fs'
-import { ensureFile, readFile, readFileSync, unlink, writeFile } from 'fs-extra'
-import { Inject, LauncherApp, LauncherAppKey, PathResolver, kGameDataPath } from '~/app'
-import { GFW } from '~/gfw'
+import { ensureFile, readFile, stat, unlink, writeFile } from 'fs-extra'
+import { join } from 'path'
+import { Inject, kGameDataPath, LauncherApp, LauncherAppKey, PathResolver } from '~/app'
+import { GFW, kGFW } from '~/gfw'
 import { JavaService } from '~/java'
 import { kDownloadOptions } from '~/network'
-import { ResourceService } from '~/resource'
 import { AbstractService, ExposeServiceKey, Lock, Singleton } from '~/service'
 import { getApiSets, kSettings, shouldOverrideApiSet } from '~/settings'
-import { TaskFn, kTaskExecutor } from '~/task'
+import { kTaskExecutor, TaskFn } from '~/task'
+import { linkOrCopyFile } from '~/util/fs'
 import { joinUrl, replaceHost } from '~/util/url'
 import { VersionService } from '~/version'
 import { AnyError } from '../util/error'
-import { missing } from '../util/fs'
+import { kOptifineInstaller } from './optifine'
 
 /**
  * Version install service provide some functions to install Minecraft/Forge/Liteloader, etc. version
@@ -26,10 +27,9 @@ import { missing } from '../util/fs'
 export class InstallService extends AbstractService implements IInstallService {
   constructor(@Inject(LauncherAppKey) app: LauncherApp,
     @Inject(VersionService) private versionService: VersionService,
-    @Inject(ResourceService) private resourceService: ResourceService,
     @Inject(JavaService) private javaService: JavaService,
     @Inject(kGameDataPath) private getPath: PathResolver,
-    @Inject(GFW) private gfw: GFW,
+    @Inject(kGFW) private gfw: GFW,
     @Inject(kSettings) private settings: MutableState<Settings>,
     @Inject(kDownloadOptions) private downloadOptions: DownloadBaseOptions,
     @Inject(kTaskExecutor) private submit: TaskFn,
@@ -70,19 +70,19 @@ export class InstallService extends AbstractService implements IInstallService {
             }
           }
         }
-        const task = parsedArgs.task
+        const task = parsedArgs['--task']
 
         if (task !== 'DOWNLOAD_MOJMAPS') return false
-        if (!parsedArgs.version || !parsedArgs.side || !parsedArgs.output) return false
+        if (!parsedArgs['--version'] || !parsedArgs['--side'] || !parsedArgs['--output']) return false
 
-        const versionContent = await readFile(this.getPath('versions', parsedArgs.version, `${parsedArgs.version}.json`), 'utf-8').catch(() => '')
+        const versionContent = await readFile(this.getPath('versions', parsedArgs['--version'], `${parsedArgs['--version']}.json`), 'utf-8').catch(() => '')
         if (!versionContent) return false
 
         const version: Version = JSON.parse(versionContent)
-        const mapping = version.downloads?.[`${parsedArgs.side}_mappings`]
+        const mapping = version.downloads?.[`${parsedArgs['--side']}_mappings`]
         if (!mapping) return false
 
-        const output = parsedArgs.output
+        const output = parsedArgs['--output']
         const url = new URL(mapping.url)
         const urls = allSets.map(api => {
           if (api.name === 'mojang') {
@@ -444,6 +444,26 @@ export class InstallService extends AbstractService implements IInstallService {
           if (err.message.indexOf('sun.security.validator.ValidatorException') !== -1) {
             continue
           }
+          if (err.message.indexOf('java.util.zip.ZipException: invalid entry size') !== -1) {
+            // Some file are not downloaded completely
+            if (err instanceof PostProcessFailedError) {
+              if (err.jarPath.indexOf('jarsplitter') !== -1) {
+                // remove slim, extra and srg if present to force it to rework
+                const slim = err.commands[err.commands.indexOf('--slim') + 1]
+                const extra = err.commands[err.commands.indexOf('--extra') + 1]
+                const srg = err.commands[err.commands.indexOf('--srg') + 1]
+                if (existsSync(slim)) {
+                  await unlink(slim)
+                }
+                if (existsSync(extra)) {
+                  await unlink(extra)
+                }
+                if (existsSync(srg)) {
+                  await unlink(srg)
+                }
+              }
+            }
+          }
         }
         this.warn(`An error ocurred during download version ${options.version}@${options.mcversion}`)
         this.warn(err)
@@ -538,29 +558,42 @@ export class InstallService extends AbstractService implements IInstallService {
     return version
   }
 
-  async installOptifineAsResource(options: InstallOptifineOptions) {
+  async getOptifineDownloadUrl(version: OptifineVersion) {
+    const installer = await this.app.registry.getIfPresent(kOptifineInstaller)
+    if (installer) {
+      return installer(version)
+    }
+    return `https://bmclapi2.bangbang93.com/optifine/${version.mcversion}/${version.type}/${version.patch}`
+  }
+
+  async installOptifineAsMod(options: InstallOptifineAsModOptions) {
     const optifineVersion = `${options.type}_${options.patch}`
     const version = `${options.mcversion}_${optifineVersion}`
     const path = new MinecraftFolder(this.getPath()).getLibraryByPath(`/optifine/OptiFine/${version}/OptiFine-${version}-universal.jar`)
-    const resourceService = this.resourceService
-    if (await missing(path)) {
-      const urls = [] as string[]
-      if (getApiSets(this.settings)[0].name === 'bmcl') {
-        urls.push(
-          `https://bmclapi2.bangbang93.com/optifine/${options.mcversion}/${options.type}/${options.patch}`,
-        )
+    const url = await this.getOptifineDownloadUrl(options)
+    try {
+      const response = await this.app.fetch(url, { method: 'HEAD' })
+      const contentLength = parseInt(response.headers.get('content-length') ?? '0', 10)
+      if (isNaN(contentLength)) {
+        throw new Error()
       }
+      const localLength = (await stat(path)).size
+      if (contentLength !== localLength) {
+        throw new Error()
+      }
+    } catch {
       const downloadOptions = this.downloadOptions
       await this.submit(task('installOptifine', async function () {
         await this.yield(new DownloadTask({
           ...downloadOptions,
-          url: urls,
+          url,
           destination: path,
         }).setName('download'))
       }))
     }
-    const [resource] = await resourceService.importResources([{ path, domain: ResourceDomain.Mods }])
-    return resource
+    await linkOrCopyFile(path, join(options.instancePath, 'mods', `OptiFine-${version}.jar`)).catch((e) => {
+      throw new AnyError('OptifineInstallError', `Failed to copy OptiFine to mods folder. ${e.code}`)
+    })
   }
 
   @Lock((v: InstallOptifineOptions) => LockKey.version(`optifine-${v.mcversion}-${v.type}_${v.patch}`))
@@ -589,26 +622,17 @@ export class InstallService extends AbstractService implements IInstallService {
     }
 
     const java = this.javaService.getPreferredJava()?.path
-    const resourceService = this.resourceService
-    const error = this.error
 
-    const urls = [] as string[]
-    if (getApiSets(this.settings)[0].name === 'mcbbs') {
-      urls.push(
-        `https://bmclapi2.bangbang93.com/optifine/${options.mcversion}/${options.type}/${options.patch}`,
-      )
-    } else {
-      urls.push(
-        `https://bmclapi2.bangbang93.com/optifine/${options.mcversion}/${options.type}/${options.patch}`,
-      )
-    }
+    const urls = [
+      await this.getOptifineDownloadUrl(options),
+    ] as string[]
+
     const result = await this.submit(task('installOptifine', async function () {
       await this.yield(new DownloadTask({
         ...downloadOptions,
         url: urls,
         destination: path,
       }).setName('download'))
-      const resources = await resourceService.importResources([{ path, domain: ResourceDomain.Mods }])
       let id: string = await this.concat(installOptifineTask(path, minecraft, { java }))
 
       if (options.inheritFrom) {
@@ -625,7 +649,7 @@ export class InstallService extends AbstractService implements IInstallService {
         await writeFile(dest, JSON.stringify(json, null, 4))
         id = json.id
       }
-      return [id, resources[0]] as [string, Resource]
+      return id
     }, { id: optifineVersion }))
 
     this.log(`Succeed to install optifine ${version} on ${options.inheritFrom ?? options.mcversion}. ${result[0]}`)

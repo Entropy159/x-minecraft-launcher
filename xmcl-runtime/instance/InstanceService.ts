@@ -8,12 +8,11 @@ import { Inject, LauncherAppKey, PathResolver, kGameDataPath } from '~/app'
 import { ImageStorage } from '~/imageStore'
 import { VersionMetadataService } from '~/install'
 import { readLaunchProfile } from '~/launchProfile'
-import { ResourceWorker, kResourceWorker } from '~/resource'
 import { ExposeServiceKey, ServiceStateManager, Singleton, StatefulService } from '~/service'
 import { AnyError } from '~/util/error'
 import { validateDirectory } from '~/util/validate'
 import { LauncherApp } from '../app/LauncherApp'
-import { exists, isDirectory, isPathDiskRootPath, linkWithTimeoutOrCopy, readdirEnsured } from '../util/fs'
+import { copyPassively, exists, isDirectory, isPathDiskRootPath, linkWithTimeoutOrCopy, readdirEnsured } from '../util/fs'
 import { assignShallow, requireObject, requireString } from '../util/object'
 import { SafeFile, createSafeFile, createSafeIO } from '../util/persistance'
 
@@ -30,7 +29,6 @@ export class InstanceService extends StatefulService<InstanceState> implements I
   constructor(@Inject(LauncherAppKey) app: LauncherApp,
     @Inject(ServiceStateManager) store: ServiceStateManager,
     @Inject(VersionMetadataService) private versionMetadataService: VersionMetadataService,
-    @Inject(kResourceWorker) private worker: ResourceWorker,
     @Inject(kGameDataPath) private getPath: PathResolver,
     @Inject(ImageStorage) private imageStore: ImageStorage,
   ) {
@@ -85,11 +83,6 @@ export class InstanceService extends StatefulService<InstanceState> implements I
       // }
 
       this.state
-        .subscribe('instanceAdd', async (payload: Instance) => {
-          await this.instanceFile.write(join(payload.path, 'instance.json'), payload)
-          // await this.instancesFile.write({ instances: Object.keys(this.state.all).map(normalizeInstancePath), selectedInstance: normalizeInstancePath(this.state.path) })
-          this.log(`Saved new instance ${payload.path}`)
-        })
         .subscribe('instanceEdit', async ({ path }) => {
           const inst = this.state.all[path]
           await this.instanceFile.write(join(path, 'instance.json'), inst)
@@ -257,6 +250,8 @@ export class InstanceService extends StatefulService<InstanceState> implements I
       await ensureDir(join(instance.path, 'shaderpacks'))
     }
     this.state.instanceAdd(instance)
+
+    await this.instanceFile.write(join(instance.path, 'instance.json'), instance)
 
     this.log('Created instance with option')
     this.log(JSON.stringify(instance, null, 4))
@@ -551,9 +546,9 @@ export class InstanceService extends StatefulService<InstanceState> implements I
     }
 
     // copy assets, library and versions
-    await this.worker.copyPassively([
-      { src: resolve(path, 'libraries'), dest: this.getPath('libraries') },
-      { src: resolve(path, 'assets'), dest: this.getPath('assets') },
+    await Promise.all([
+      copyPassively(resolve(path, 'libraries'), this.getPath('libraries')),
+      copyPassively(resolve(path, 'assets'), this.getPath('assets')),
     ])
 
     const versions = await readdir(resolve(path, 'versions')).catch(() => [])

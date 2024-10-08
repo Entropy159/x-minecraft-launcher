@@ -3,9 +3,9 @@ import StoreProject, { StoreProject as IStoreProject } from '@/components/StoreP
 import { StoreProjectVersion } from '@/components/StoreProjectInstallVersionDialog.vue'
 import { TeamMember } from '@/components/StoreProjectMembers.vue'
 import { getCurseforgeProjectDescriptionModel, getCurseforgeProjectFilesModel, getCurseforgeProjectModel, useCurseforgeCategoryI18n } from '@/composables/curseforge'
-import { useCurseforgeInstallModpack } from '@/composables/curseforgeInstaller'
 import { useDateString } from '@/composables/date'
 import { kInstances } from '@/composables/instances'
+import { useModpackInstaller } from '@/composables/modpackInstaller'
 import { useSWRVModel } from '@/composables/swrv'
 import { kSWRVConfig } from '@/composables/swrvConfig'
 import { useTasks } from '@/composables/task'
@@ -135,11 +135,8 @@ const members = computed(() => {
 const _installing = ref(false)
 const onInstall = (v: StoreProjectVersion) => {
   if (!proj.value) return
-  const files = (allVersions.data.value?.data || proj.value.latestFiles)
-  const file = files.find(f => f.id.toString() === v.id)
-  if (!file) return
   _installing.value = true
-  installModpack(file).finally(() => {
+  installModpack({ file: { fileId: Number(v.id), icon: project.value?.iconUrl }, market: 1 }).finally(() => {
     _installing.value = false
   })
 }
@@ -162,7 +159,7 @@ const tasks = useTasks((t) => {
   return false
 })
 const isDownloading = computed(() => tasks.value.length > 0)
-const installModpack = useCurseforgeInstallModpack(computed(() => project.value?.iconUrl))
+const installModpack = useModpackInstaller()
 
 </script>
 <template>

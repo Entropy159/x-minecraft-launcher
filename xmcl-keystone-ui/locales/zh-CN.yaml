@@ -36,7 +36,7 @@ FeedTheBeastProject:
   overview: 总览
   versions: 版本
 HomeJavaIssueDialog:
-  incompatibleJava: 当前的 Java 版本可能不兼容
+  incompatibleJava: 当前 Java 版本可能无法正常启动 Minecraft
   incompatibleJavaHint: Java {javaVersion} 可能无法运行已选择的 Minecraft 版本
   missingJava: 没有找到 Java
   missingJavaHint: 启动器在您的电脑上没有找到任何Java。您可以尝试：
@@ -424,6 +424,10 @@ instance:
   lastPlayed: 上次游玩
   launchArguments: 启动命令预览
   launchServer: 启动本地服务端
+  linkFileDesc: |-
+    这将使用全局 {file} 覆盖实例本地 {file}。
+    您确定要链接吗？
+  linkFileTitle: 您确定要链接{file}吗？
   mcOptions: Minecraft 启动选项
   mcOptionsHint: 额外的 Minecraft 启动参数
   name: 名称
@@ -435,6 +439,10 @@ instance:
   prependCommandHint: 这将在所有启动命令之前添加此命令
   requireName: 必须填写名称
   showInstance: 打开文件夹
+  useSharedOptions: 共享 Minecraft 设置
+  useSharedOptionsDesc: 这会将 options.txt 链接到跨实例的共享文件
+  useSharedServersList: 共享服务器列表
+  useSharedServersListDesc: 这会将servers.dat链接到跨实例的共享文件
   versionHint: 此游戏使用的 Minecraft 版本
   vmOptions: JVM 启动选项
   vmOptionsHint: 额外的 JVM 的启动参数
@@ -442,6 +450,9 @@ instanceAge:
   older: 三天前
   threeDay: 三天内
   today: 今天
+instanceDiscover:
+  gameFolder: 发现 {count} 个游戏文件夹
+  instanceFolder: 找到 {count} 个实例
 instanceFileOperation:
   add: 新增
   backup-add: 备份并替换
@@ -480,15 +491,20 @@ instanceUpdate:
   update: 开始更新实例
 instances:
   add: 创建游戏
+  addCurseForgeDescription: |-
+    从curseforge 数据文件夹导入。
+    您需要选择curseforge的根数据文件夹
   addDescription: 从头开始创建一个新实例
-  addMMCDescription: 导入已有的 MultiMC 实例，您需要选择 MultiMC 实例的文件夹
+  addMMCDescription: |-
+    导入现有的 MultiMC 实例。
+    您需要从 MultiMC 中选择数据文件夹。
   addManually: 手动创建
   addModrinthDescription: |-
     导入现有的 Modrinth 实例。
-    您需要选择 Modrinth 实例文件夹。
+    您需要选择 Modrinth 根数据文件夹。
   addServer: 从服务器创建
   addServerDescription: 这将创建一个直接启动到服务器的游戏。
-  addTemplate: 从模板创建
+  addTemplate: 从下载的整合包创建
   addTemplateDescription: 从下载的整合包导入
   addVanilla: 从原版 Minecraft 创建
   addVanillaDescription: |-
@@ -528,6 +544,7 @@ launch:
   kill: 停止
   killServer: 停止本地服务器
   launch: 启动
+  launchAnyway: 直接启动
 launchBlocked:
   ignore: 强制启动
   launchBadVersion:
@@ -1193,6 +1210,7 @@ setting:
   maxSockets: (每个网站)最大连接数
   maxSocketsDescription: 控制最大的并发 HTTP 链接数量。0 代表不限制数量。
   maxSocketsTitle: 最大 HTTP 连接数量
+  migrateFromOther: 从其他启动器导入
   name: 设置
   network: 网络设置
   officialWebsite: 官网地址
@@ -1292,6 +1310,7 @@ shaderPack:
   showFile: 在文件夹中显示此光影包
 shared:
   accept: 接受
+  skipForNow: 先跳过
 store:
   explore: 探索
   latestMinecraft: 使用近期 Minecraft 版本
